@@ -11,6 +11,7 @@ Python implementation of SIYI SDK for communication with ZR10 and A8 Mini camera
 * Clone this package
     ```bash
     git clone https://github.com/mzahana/siyi_sdk.git
+    pip install -e .
     ```
 * Connect the camera to PC or onboard computer using the ethernet cable that comes with it. The current implementation uses UDP communication.
 * Power on the camera

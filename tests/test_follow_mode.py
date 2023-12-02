@@ -10,12 +10,7 @@ import sys
 import os
 from time import sleep
   
-current = os.path.dirname(os.path.realpath(__file__))
-parent_directory = os.path.dirname(current)
-  
-sys.path.append(parent_directory)
-
-from siyi_sdk import SIYISDK
+from siyi_sdk_src import SIYISDK
 
 def test():
     cam = SIYISDK(server_ip="192.168.144.25", port=37260)
