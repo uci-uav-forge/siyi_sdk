@@ -1,11 +1,3 @@
-"""
-@file test_center_gimbal.py
-@Description: This is a test script for using the SIYI SDK Python implementation to adjust zoom level
-@Author: Mohamed Abdelkader
-@Contact: mohamedashraf123@gmail.com
-All rights reserved 2022
-"""
-
 import sys
 import os
 from time import sleep

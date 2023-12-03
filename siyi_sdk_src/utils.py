@@ -31,3 +31,22 @@ def toInt(hexval):
     if val & (1 << (bits-1)):
         val -= 1 << bits
     return val
+
+def mapping(x : float, in_min : float, in_max : float, out_min : float, out_max : float) -> float:
+    """
+    Maps a value from one range to another range
+    Ref: https://www.arduino.cc/reference/en/language/functions/math/map/
+
+    Params
+    --
+    x: [float] Value to map
+    in_min: [float] Lower bound of the input range
+    in_max: [float] Upper bound of the input range
+    out_min: [float] Lower bound of the output range
+    out_max: [float] Upper bound of the output range
+
+    Returns
+    --
+    Mapped value
+    """
+    return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min

@@ -44,6 +44,7 @@ class SIYISDK:
         self._fw_msg = FirmwareMsg()
         self._hw_msg = HardwareIDMsg()
         self._autoFocus_msg = AutoFocusMsg()
+        self._absoluteZoom_msg=AbsoluteZoomMsg()
         self._manualZoom_msg=ManualZoomMsg()
         self._manualFocus_msg=ManualFocusMsg()
         self._gimbalSpeed_msg=GimbalSpeedMsg()
@@ -52,7 +53,7 @@ class SIYISDK:
         self._mountDir_msg=MountDirMsg()
         self._motionMode_msg=MotionModeMsg()
         self._funcFeedback_msg=FuncFeedbackInfoMsg()
-        self._att_msg=AttitdueMsg()
+        self._att_msg=AttitudeMsg()
         self._last_att_seq=-1
 
         # Stop threads
@@ -83,6 +84,7 @@ class SIYISDK:
         self._fw_msg = FirmwareMsg()
         self._hw_msg = HardwareIDMsg()
         self._autoFocus_msg = AutoFocusMsg()
+        self._absoluteZoom_msg=AbsoluteZoomMsg()
         self._manualZoom_msg=ManualZoomMsg()
         self._manualFocus_msg=ManualFocusMsg()
         self._gimbalSpeed_msg=GimbalSpeedMsg()
@@ -91,7 +93,7 @@ class SIYISDK:
         self._mountDir_msg=MountDirMsg()
         self._motionMode_msg=MotionModeMsg()
         self._funcFeedback_msg=FuncFeedbackInfoMsg()
-        self._att_msg=AttitdueMsg()
+        self._att_msg=AttitudeMsg()
 
 
         return True
@@ -281,6 +283,8 @@ class SIYISDK:
                 self.parseManualFocusMsg(data, seq)
             elif cmd_id==COMMAND.MANUAL_ZOOM:
                 self.parseZoomMsg(data, seq)
+            elif cmd_id==COMMAND.ABSOLUTE_ZOOM:
+                self.parseZoomMsg(data, seq)
             elif cmd_id==COMMAND.CENTER:
                 self.parseGimbalCenterMsg(data, seq)
             else:
@@ -365,6 +369,23 @@ class SIYISDK:
         [bool] True: success. False: fail
         """
         msg = self._out_msg.autoFocusMsg()
+        if not self.sendMsg(msg):
+            return False
+        return True
+
+    def requestAbsoluteZoom(self, level):
+        """
+        Sends request for absolute zoom
+
+        Params
+        --
+        level [int] Zoom level 0~100
+
+        Returns
+        --
+        [bool] True: success. False: fail
+        """
+        msg = self._out_msg.absoluteZoomMsg(level)
         if not self.sendMsg(msg):
             return False
         return True
@@ -620,6 +641,20 @@ class SIYISDK:
         except Exception as e:
             self._logger.error("Error %s", e)
             return False
+        
+    def parseAbsoluteZoomMsg(self, msg:str, seq:int):
+        
+        try:
+            self._absoluteZoom_msg.seq=seq
+            self._absoluteZoom_msg.success = bool(int('0x'+msg, base=16))
+
+            
+            self._logger.debug("Absolute Zoom success: %s", self._absoluteZoom_msg.success)
+
+            return True
+        except Exception as e:
+            self._logger.error("Error %s", e)
+            return False
 
     def parseZoomMsg(self, msg:str, seq:int):
         
@@ -724,6 +759,23 @@ class SIYISDK:
     #################################################
     #                 Set functions                 #
     #################################################
+
+    def setAbsoluteZoom(self, level):
+        """
+        Sets absolute zoom level
+
+        Params
+        --
+        level [int] Zoom level 0~100
+        """
+        if level<0 or level>100:
+            self._logger.error("Zoom level is out of range 0~100")
+            return
+
+        self.requestAbsoluteZoom(level)
+        #sleep(0.1)
+        #self.requestZoomHold()
+
     def setGimbalRotation(self, yaw, pitch, err_thresh=1.0, kp=4):
         """
         Sets gimbal attitude angles yaw and pitch in degrees

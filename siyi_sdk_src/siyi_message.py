@@ -1,7 +1,7 @@
 from os import stat
 from .crc16_python import crc16_str_swap
 import logging
-from .utils import toHex
+from .utils import toHex, mapping
 
 class FirmwareMsg:
     seq=0
@@ -20,6 +20,10 @@ class AutoFocusMsg:
 class ManualZoomMsg:
     seq=0
     level=-1
+
+class AbsoluteZoomMsg:
+    seq=0
+    success=False
 
 class ManualFocusMsg:
     seq=0
@@ -64,7 +68,7 @@ class FuncFeedbackInfoMsg:
     HDR_OFF=3
     RECROD_FAIL=4
 
-class AttitdueMsg:
+class AttitudeMsg:
     seq=    0
     stamp=  0 # seconds
     yaw=    0.0
@@ -465,4 +469,31 @@ class SIYIMESSAGE:
         data2=toHex(pitch_speed, 8)
         data=data1+data2
         cmd_id = COMMAND.GIMBAL_ROT
+        return self.encodeMsg(data, cmd_id)
+
+    def absoluteZoomMsg(self, zoom_level:int, zoom_max:float = 10.0):
+        """
+        Absolute zoom level Msg.
+        Values 0~100: 0 is the widest, 100 is the most zoomed in.
+
+        Params
+        --
+        - zoom_level [int] 0~100 (mapped to fractional value for camera)
+        - zoom_max [int] Maximum zoom level given by camera
+        """
+        if zoom_level>100:
+            zoom_level=100
+        if zoom_level<0:
+            zoom_level=0
+        
+        zoom_level= mapping(zoom_level, 0, 100, 0, zoom_max)
+
+        zoom_level_int = int(zoom_level)
+        zoom_level_frac = int(round(zoom_level%1,1)*10)
+
+        data1=toHex(zoom_level_int, 8)
+        data2=toHex(zoom_level_frac, 8)
+        data=data1+data2
+
+        cmd_id = COMMAND.ABSOLUTE_ZOOM
         return self.encodeMsg(data, cmd_id)
