@@ -773,8 +773,8 @@ class SIYISDK:
             return
 
         self.requestAbsoluteZoom(level)
-        #sleep(0.1)
-        #self.requestZoomHold()
+        sleep(0.1)
+        self.requestZoomHold()
 
     def setGimbalRotation(self, yaw, pitch, err_thresh=1.0, kp=4):
         """
