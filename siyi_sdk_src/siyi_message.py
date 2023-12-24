@@ -284,7 +284,7 @@ class SIYIMESSAGE:
         """
         seq = self.incrementSEQ(self._seq)
         data_len = self.computeDataLen(data)
-        # msg_front = self.HEADER+self._ctr+data_len+seq+cmd_id+data
+        #msg_front = self.HEADER+self._ctr+data_len+seq+cmd_id+data
         msg_front = self.HEADER+self._ctr+data_len+'0000'+cmd_id+data
         crc = crc16_str_swap(msg_front)
         if crc is not None:
@@ -471,22 +471,17 @@ class SIYIMESSAGE:
         cmd_id = COMMAND.GIMBAL_ROT
         return self.encodeMsg(data, cmd_id)
 
-    def absoluteZoomMsg(self, zoom_level:int, zoom_max:float = 10.0):
+    def absoluteZoomMsg(self, zoom_level:int):
         """
         Absolute zoom level Msg.
-        Values 0~100: 0 is the widest, 100 is the most zoomed in.
+        Values 0~100: 0 is the widest, 30 is the most zoomed in.
 
         Params
         --
-        - zoom_level [int] 0~100 (mapped to fractional value for camera)
-        - zoom_max [int] Maximum zoom level given by camera
+        - zoom_level [int] 0~30 (mapped to fractional value for camera)
         """
-        if zoom_level>100:
-            zoom_level=100
-        if zoom_level<0:
-            zoom_level=0
         
-        zoom_level= mapping(zoom_level, 0, 100, 0, zoom_max)
+        zoom_level = max(0, min(30, zoom_level))
 
         zoom_level_int = int(zoom_level)
         zoom_level_frac = int(round(zoom_level%1,1)*10)
@@ -496,4 +491,5 @@ class SIYIMESSAGE:
         data=data1+data2
 
         cmd_id = COMMAND.ABSOLUTE_ZOOM
+        self._logger.debug("Next encoded msg is absolute zoom")
         return self.encodeMsg(data, cmd_id)

@@ -373,19 +373,23 @@ class SIYISDK:
             return False
         return True
 
-    def requestAbsoluteZoom(self, level):
+    def requestAbsoluteZoom(self, level, msg=None):
         """
         Sends request for absolute zoom
 
         Params
         --
-        level [int] Zoom level 0~100
+        level [int] Zoom level 0~30
 
         Returns
         --
         [bool] True: success. False: fail
         """
-        msg = self._out_msg.absoluteZoomMsg(level)
+        if msg:
+            msg = msg
+        else:
+            msg = self._out_msg.absoluteZoomMsg(level)
+        print(f"-----------------------------------{msg}")
         if not self.sendMsg(msg):
             return False
         return True
@@ -569,9 +573,12 @@ class SIYISDK:
     ####################################################
     def parseFirmwareMsg(self, msg:str, seq:int):
         try:
+            self._fw_msg.code_board_ver = msg[:8]
             self._fw_msg.gimbal_firmware_ver= msg[8:16]
+            self._fw_msg.zoom_firmware_ver = msg[16:]
             self._fw_msg.seq=seq
             
+
             self._logger.debug("Firmware version: %s", self._fw_msg.gimbal_firmware_ver)
 
             return True
@@ -653,7 +660,7 @@ class SIYISDK:
 
             return True
         except Exception as e:
-            self._logger.error("Error %s", e)
+            self._logger.error("Absolute Zoom Error %s", e)
             return False
 
     def parseZoomMsg(self, msg:str, seq:int):
@@ -736,7 +743,7 @@ class SIYISDK:
         return(self._att_msg.yaw_speed, self._att_msg.pitch_speed, self._att_msg.roll_speed)
 
     def getFirmwareVersion(self):
-        return(self._fw_msg.gimbal_firmware_ver)
+        return(self._fw_msg.code_board_ver, self._fw_msg.gimbal_firmware_ver, self._fw_msg.zoom_firmware_ver)
 
     def getHardwareID(self):
         return(self._hw_msg.id)
@@ -768,8 +775,8 @@ class SIYISDK:
         --
         level [int] Zoom level 0~100
         """
-        if level<0 or level>100:
-            self._logger.error("Zoom level is out of range 0~100")
+        if level<0 or level>30:
+            self._logger.error("Zoom level is out of range 0~30")
             return
 
         self.requestAbsoluteZoom(level)
