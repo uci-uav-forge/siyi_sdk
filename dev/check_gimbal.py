@@ -1,5 +1,3 @@
-import sys
-import os
 from time import sleep
 from siyi_sdk_src import SIYISDK
 
@@ -11,19 +9,18 @@ def test():
         exit(1)
 
     sleep(2)
-    #print(cam.requestAbsoluteZoom(4.5))
     cam.requestCenterGimbal()
     sleep(5)
-    
-    #cam.requestFirmwareVersion()
-    #sleep(1)
-    #print("Camera Firmware version: ", cam.getFirmwareVersion())
-
+    cam.requestAbsolutePosition(135, -90)
     sleep(3)
-    #print("Zoom level: ", cam.getZoomLevel())
-    #cam.requestAutoFocus()
-    #print("Autofocused")
-
+    cam.requestAbsolutePosition(0, 25)
+    sleep(3)
+    cam.requestAbsolutePosition(-135, -90)
+    sleep(3)
+    cam.requestAbsolutePosition(0, -90)
+    sleep(3)
+    cam.requestAbsolutePosition(0, 0)
+    sleep(3)
     cam.disconnect()
 
 if __name__ == "__main__":
