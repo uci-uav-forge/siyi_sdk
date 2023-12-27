@@ -45,6 +45,7 @@ class SIYISDK:
         self._hw_msg = HardwareIDMsg()
         self._autoFocus_msg = AutoFocusMsg()
         self._absoluteZoom_msg=AbsoluteZoomMsg()
+        self._absolutePosition_msg=AbsolutePositionMsg()
         self._manualZoom_msg=ManualZoomMsg()
         self._manualFocus_msg=ManualFocusMsg()
         self._gimbalSpeed_msg=GimbalSpeedMsg()
@@ -85,6 +86,7 @@ class SIYISDK:
         self._hw_msg = HardwareIDMsg()
         self._autoFocus_msg = AutoFocusMsg()
         self._absoluteZoom_msg=AbsoluteZoomMsg()
+        self._absolutePosition_msg=AbsolutePositionMsg()
         self._manualZoom_msg=ManualZoomMsg()
         self._manualFocus_msg=ManualFocusMsg()
         self._gimbalSpeed_msg=GimbalSpeedMsg()
@@ -132,6 +134,7 @@ class SIYISDK:
         """
         self.requestFirmwareVersion()
         sleep(0.1)
+        #self._connected = True
         if self._fw_msg.seq!=self._last_fw_seq and len(self._fw_msg.gimbal_firmware_ver)>0:
             self._connected = True
             self._last_fw_seq=self._fw_msg.seq
@@ -197,6 +200,7 @@ class SIYISDK:
         msg [str] Message to send
         """
         b = bytes.fromhex(msg)
+        #print(b.hex())
         try:
             self._socket.sendto(b, (self._server_ip, self._port))
             return True
@@ -214,7 +218,7 @@ class SIYISDK:
 
     def recvLoop(self):
         self._logger.debug("Started data receiving thread")
-        while( not self._stop):
+        while(not self._stop):
             self.bufferCallback()
         self._logger.debug("Exiting data receiving thread")
 
@@ -223,7 +227,9 @@ class SIYISDK:
         """
         Receives messages and parses its content
         """
-        buff,addr = self._socket.recvfrom(self._BUFF_SIZE)
+        buff = self.rcvMsg()
+        if buff is None:
+            return
 
         buff_str = buff.hex()
         self._logger.debug("Buffer: %s", buff_str)
@@ -285,6 +291,8 @@ class SIYISDK:
                 self.parseZoomMsg(data, seq)
             elif cmd_id==COMMAND.ABSOLUTE_ZOOM:
                 self.parseZoomMsg(data, seq)
+            elif cmd_id==COMMAND.ABSOLUTE_POSITION:
+                self.parseAbsolutePositionMsg(data, seq)
             elif cmd_id==COMMAND.CENTER:
                 self.parseGimbalCenterMsg(data, seq)
             else:
@@ -389,7 +397,26 @@ class SIYISDK:
             msg = msg
         else:
             msg = self._out_msg.absoluteZoomMsg(level)
-        print(f"-----------------------------------{msg}")
+        if not self.sendMsg(msg):
+            return False
+        return True
+
+    def requestAbsolutePosition(self, yaw, pitch):
+        """
+        Sends request for absolute position
+        Pitch values: 0 is the center, - is down + is up.
+        Yaw values: 0 is the center, - is left + is right.
+
+        Params
+        --
+         - yaw [int] -135~135
+         - pitch [int] -90~25
+
+        Returns
+        --
+        [bool] True: success. False: fail
+        """
+        msg = self._out_msg.absolutePositionMsg(yaw, pitch)
         if not self.sendMsg(msg):
             return False
         return True
@@ -487,7 +514,7 @@ class SIYISDK:
 
     def requestGimbalSpeed(self, yaw_speed:int, pitch_speed:int):
         """
-        Sends request for gimbal centering
+        Sends request for moving the gimbal
 
         Params
         --
@@ -662,6 +689,18 @@ class SIYISDK:
         except Exception as e:
             self._logger.error("Absolute Zoom Error %s", e)
             return False
+
+    def parseAbsolutePositionMsg(self, msg:str, seq:int):
+            
+            try:
+                self._absolutePosition_msg.seq=seq
+                # TODO
+                self._logger.debug("Absolute Position success: %s", msg)
+    
+                return True
+            except Exception as e:
+                self._logger.error("Absolute Position Error %s", e)
+                return False
 
     def parseZoomMsg(self, msg:str, seq:int):
         

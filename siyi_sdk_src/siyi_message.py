@@ -78,6 +78,11 @@ class AttitudeMsg:
     pitch_speed=0.0
     roll_speed= 0.0
 
+class AbsolutePositionMsg:
+    seq=0
+    curr_yaw=0.0
+    curr_pitch=0.0
+    curr_roll=0.0
 
 class COMMAND:
     ACQUIRE_FW_VER = '01'
@@ -172,7 +177,7 @@ class SIYIMESSAGE:
 
     def computeDataLen(self, data):
         """
-        Computes the data lenght (number of bytes) of data, and return a string of two bytes in reveresed order
+        Computes the data length (number of bytes) of data, and return a string of two bytes in reversed order
 
         Params
         --
@@ -492,4 +497,34 @@ class SIYIMESSAGE:
 
         cmd_id = COMMAND.ABSOLUTE_ZOOM
         self._logger.debug("Next encoded msg is absolute zoom")
+        return self.encodeMsg(data, cmd_id)
+    
+
+    def absolutePositionMsg(self, yaw, pitch):
+        """
+        Absolute position Msg.
+        Pitch values: 0 is the center, - is down + is up.
+        Yaw values: 0 is the center, - is left + is right.
+        
+        Params
+        --
+        - pitch [int] -90~25
+        - yaw [int] -135~135
+        """
+        pitch = max(-90, min(25, pitch))
+        yaw = max(-135, min(135, yaw))
+
+        pitch_data = int(pitch*10) # 1 decimal place
+        yaw_data = int(yaw*10)
+
+        data1=toHex(yaw_data, 16)
+        data2=toHex(pitch_data, 16)
+
+        data = data1[2:4]+data1[0:2]+data2[2:4]+data2[0:2]
+
+        cmd_id = COMMAND.ABSOLUTE_POSITION
+        self._logger.debug("Next encoded msg is absolute position")
+        print("             -------------")
+        print(f"yaw: {yaw_data}, pitch: {pitch_data}")
+        print(f"data: {data}")
         return self.encodeMsg(data, cmd_id)

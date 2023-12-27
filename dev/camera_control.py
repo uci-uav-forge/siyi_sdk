@@ -64,6 +64,9 @@ class CameraControl:
         if keys[pygame.K_c]:
             self.camera.requestCenterGimbal()
             print("Centered gimbal")
+        if keys[pygame.K_r]:
+            self.camera.requestAbsolutePosition(0, 0)
+            print("Pointing gimbal down")
 
 if __name__ == "__main__":
     cam = SIYISDK(server_ip="192.168.144.25", port=37260)

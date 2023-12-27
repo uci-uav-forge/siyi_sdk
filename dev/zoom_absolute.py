@@ -11,15 +11,19 @@ def test():
         exit(1)
 
     sleep(2)
-    cam.setAbsoluteZoom(4.5)
+    #print(cam.requestAbsoluteZoom(4.5))
+    cam.requestCenterGimbal()
+    sleep(5)
+    cam.requestAbsolutePosition(0, -90)
+
     #cam.requestFirmwareVersion()
     #sleep(1)
     #print("Camera Firmware version: ", cam.getFirmwareVersion())
 
     sleep(3)
-    print("Zoom level: ", cam.getZoomLevel())
-    cam.requestAutoFocus()
-    print("Autofocused")
+    #print("Zoom level: ", cam.getZoomLevel())
+    #cam.requestAutoFocus()
+    #print("Autofocused")
 
     cam.disconnect()
 

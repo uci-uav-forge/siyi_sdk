@@ -13,7 +13,9 @@ def toHex(intval, nbits):
     String of the hexdecimal value
     """
     h = format((intval + (1 << nbits)) % (1 << nbits),'x')
-    if len(h)==1:
+    # if len(h)==1:
+    #     h="0"+h
+    while len(h)<nbits//4:
         h="0"+h
     return h
 
