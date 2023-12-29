@@ -96,8 +96,8 @@ class COMMAND:
     FUNC_FEEDBACK_INFO = '0b'
     PHOTO_VIDEO_HDR = '0c'
     ACQUIRE_GIMBAL_ATT = '0d'
-    ABSOLUTE_POSITION = '0e' # TODO
-    ABSOLUTE_ZOOM = '0f' # TODO
+    ABSOLUTE_POSITION = '0e' # Done
+    ABSOLUTE_ZOOM = '0f' # Done (no longer works with latest firmware)
 
 
 
