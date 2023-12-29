@@ -1,5 +1,5 @@
 import pygame
-from siyi_sdk_src import SIYISDK
+from siyi_sdk import SIYISDK
 import time
 
 class CameraControl:

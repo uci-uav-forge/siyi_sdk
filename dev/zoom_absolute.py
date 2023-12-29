@@ -1,7 +1,7 @@
 import sys
 import os
 from time import sleep
-from siyi_sdk_src import SIYISDK
+from siyi_sdk import SIYISDK
 
 def test():
     cam = SIYISDK(server_ip="192.168.144.25", port=37260, debug=True)

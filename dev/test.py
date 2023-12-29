@@ -1,5 +1,5 @@
-from siyi_sdk_src.siyi_message import SIYIMESSAGE
-from siyi_sdk_src.utils import *
+from siyi_sdk.siyi_message import SIYIMESSAGE
+from siyi_sdk.utils import *
 
 if __name__=="__main__":
     # msg = SIYIMESSAGE(debug=True)
