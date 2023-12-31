@@ -806,21 +806,58 @@ class SIYISDK:
     #                 Set functions                 #
     #################################################
 
-    def setAbsoluteZoom(self, level):
+    def _manual_absolute_zoom(self, target : float, timeout = 15) -> bool:
+        target = max(min(target, 30), 1)
+        # to get current zoom value
+        self.requestZoomHold()
+        self._logger.debug("Zoom level: %.1f", self.getZoomLevel())
+        temp = time()
+        while self.getZoomLevel() != target:
+            total_sleep = 0.005
+            if time() - temp > timeout:
+                self._logger.error("Absolute Zoom Timeout at zoom level: %.1f", self.getZoomLevel())
+                self.requestZoomHold()
+                return False
+            if self.getZoomLevel() > target:
+                self.requestZoomOut()
+                sleep(0.01)
+                self.requestZoomHold()
+            elif self.getZoomLevel() < target:
+                self.requestZoomIn()
+                sleep(0.01)
+                self.requestZoomHold()
+            else:
+                self.requestZoomHold()
+                break
+            if abs(target - self.getZoomLevel()) < 0.5:
+                total_sleep = 0.05
+            sleep(total_sleep)
+            self.requestZoomHold()
+            self._logger.debug("Zoom level: %.1f", self.getZoomLevel())
+        self.requestZoomHold()
+        self._logger.info("Finished absolute zoom: %.1f", self.getZoomLevel())
+        return True
+
+
+    def setAbsoluteZoom(self, level : float) -> bool:
         """
-        Sets absolute zoom level
+        Sets absolute zoom level and then requests auto focus
 
         Params
         --
-        level [int] Zoom level 0~100
-        """
-        if level<0 or level>30:
-            self._logger.error("Zoom level is out of range 0~30")
-            return
+         - level [float] Zoom level 1~30
 
-        self.requestAbsoluteZoom(level)
-        sleep(0.1)
-        self.requestZoomHold()
+        Returns
+        --
+        [bool] True: success. False: fail
+        """
+        if level<1 or level>30:
+            self._logger.error("Zoom level is out of range 1~30")
+            return
+        
+        success = self._manual_absolute_zoom(level)
+        self.requestAutoFocus()
+        return success
 
     def setGimbalRotation(self, yaw, pitch, err_thresh=1.0, kp=4):
         """
@@ -828,10 +865,10 @@ class SIYISDK:
 
         Params
         --
-        yaw: [float] desired yaw in degrees
-        pitch: [float] desired pitch in degrees
-        err_thresh: [float] acceptable error threshold, in degrees, to stop correction
-        kp [float] proportional gain
+         - yaw: [float] desired yaw in degrees
+         - pitch: [float] desired pitch in degrees
+         - err_thresh: [float] acceptable error threshold, in degrees, to stop correction
+         - kp [float] proportional gain
         """
         if (pitch >25 or pitch <-90):
             self._logger.error("desired pitch is outside controllable range -90~25")
