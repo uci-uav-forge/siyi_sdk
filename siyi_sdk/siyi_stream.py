@@ -77,7 +77,7 @@ class SIYISTREAM:
         self._logger.info("Connected to camera")
         # Let the buffer fill
         time.sleep(2)
-        return
+        return True
 
     def disconnect(self):
         """
@@ -133,9 +133,9 @@ class SIYISTREAM:
         frame = self.get_frame()
         start_time = time.time()
         while True:
-            # update frame every 1 second
-            if time.time() - start_time > 1:
-                self._logger.info("Updating frame")
+            # update frame every 5 second
+            if time.time() - start_time > 3:
+                self._logger.info("Updating frame %f", time.time())
                 frame = self.get_frame()
                 start_time = time.time()
             cv2.imshow('frame', frame)

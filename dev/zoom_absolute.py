@@ -15,6 +15,7 @@ def test():
     sleep(2)
     cam.setAbsoluteZoom(1)
     sleep(3)
+    cam.setAbsoluteZoom(5)
 
     cam.disconnect()
 
