@@ -1,3 +1,8 @@
+# UAVF fork of siyi_sdk
+
+Relevant testing scripts are in `dev`.
+
+
 # siyi_sdk
 Python implementation of SIYI SDK for communication with ZR10 and A8 Mini cameras
 
