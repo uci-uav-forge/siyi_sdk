@@ -861,6 +861,7 @@ class SIYISDK:
 
     def setGimbalRotation(self, yaw, pitch, err_thresh=1.0, kp=4):
         """
+        [DO NOT USE OLD CODE] Use requestAbsolutePosition
         Sets gimbal attitude angles yaw and pitch in degrees
 
         Params
