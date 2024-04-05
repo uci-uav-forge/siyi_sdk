@@ -33,6 +33,7 @@ def test():
         elif key & 0xFF == ord(' '):
             cv2.imwrite("frame.jpg", frame)
             
+    stream.disconnect()
     cam.disconnect()
 
 if __name__ == "__main__":
