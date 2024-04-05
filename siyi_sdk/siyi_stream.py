@@ -40,6 +40,9 @@ class SIYISTREAM:
         self._stream_link = "rtsp://"+self._server_ip+":"+str(self._port)+"/"+self._name
         self._logger.info("Stream link: {}".format(self._stream_link))
         self._stream = None
+        self._latest_frame = None
+        self._frame_mutex = threading.Lock()
+        self._frame_reading_thread = threading.Thread(target=self._update_frame)
 
     def connect(self):
         """
@@ -49,9 +52,18 @@ class SIYISTREAM:
             self._logger.warning("Already connected to camera")
             return
         self._stream = av.open("rtsp://192.168.144.25:8554/main.264", format="rtsp").demux()
+
+        self._frame_reading_thread.start()
   
         self._logger.info("Connected to camera")
         return True
+    
+    def _update_frame(self):
+        print("asjdskadkadhakjdkad")
+        while self._stream is not None:
+            with self._frame_mutex:
+                self._latest_frame = next(self._stream).decode()[0].to_ndarray(format="bgr24")
+            time.sleep(1/35)
 
     def disconnect(self):
         """
@@ -61,6 +73,7 @@ class SIYISTREAM:
             self._logger.warning("Already disconnected from camera")
             return
         self._stream = None
+        self._frame_reading_thread.join()
         self._logger.info("Disconnected from camera")
         return
 
@@ -69,18 +82,9 @@ class SIYISTREAM:
         Get a frame from the stream
         """
         if self._stream is None:
-            self._logger.warning("Not connected to camera")
-            return
-        ret = False
-        while not ret:
-            self._logger.debug("Waiting for lock")
-            self._logger.debug("Lock acquired")
-            frame: av.VideoFrame = next(self._stream).decode()[0]
-            frame = frame.to_ndarray(format="bgr24")
-            ret = frame is not None
-            if ret:
-                self._logger.info("Frame read")
-            else:
-                self._logger.warning("Unable to read frame")
-        return frame
+            raise Exception("Not connected to camera")
+        if self._latest_frame is None:
+            raise Exception("No frame available")
+        with self._frame_mutex:
+            return self._latest_frame
     
