@@ -59,7 +59,6 @@ class SIYISTREAM:
         return True
     
     def _update_frame(self):
-        print("asjdskadkadhakjdkad")
         while self._stream is not None:
             with self._frame_mutex:
                 self._latest_frame = next(self._stream).decode()[0].to_ndarray(format="bgr24")
