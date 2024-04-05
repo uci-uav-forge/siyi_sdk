@@ -51,7 +51,9 @@ class SIYISTREAM:
         if self._stream is not None:
             self._logger.warning("Already connected to camera")
             return
-        self._stream = av.open("rtsp://192.168.144.25:8554/main.264", format="rtsp").demux()
+        
+        container = av.open(self._stream_link, format="rtsp")        
+        self._stream = container.demux()
 
         self._frame_reading_thread.start()
   
@@ -61,8 +63,14 @@ class SIYISTREAM:
     def _update_frame(self):
         while self._stream is not None:
             with self._frame_mutex:
-                self._latest_frame = next(self._stream).decode()[0].to_ndarray(format="bgr24")
-            time.sleep(1/35)
+                frames = next(self._stream).decode()
+                if len(frames) == 0:
+                    self._logger.warning("No frame in buffer")
+                    continue
+                elif len(frames) > 1:
+                    self._logger.warning("More than one frame in buffer")
+                self._latest_frame = frames[0].to_ndarray(format="bgr24")
+            time.sleep(1/1000)
 
     def disconnect(self):
         """
