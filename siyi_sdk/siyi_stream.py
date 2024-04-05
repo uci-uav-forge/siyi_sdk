@@ -1,3 +1,4 @@
+import av # pip install av --no-binary av (https://stackoverflow.com/a/74265080)
 import cv2
 import numpy as np
 import time
@@ -12,9 +13,6 @@ import threading
 # Untested but could work if we build opencv with gstreamer:
 # This will automatically grab latest frame
 #cv2.VideoCapture("rtspsrc location=rtsp://... ! decodebin ! videoconvert ! video/x-raw,framerate=30/1 ! appsink drop=true sync=false", cv2.CAP_GSTREAMER)
-
-# With the current method, we can grab the latest frame, but it will be ~0.6 seconds behind realtime to due opencv being dogshit. (you can see this by running the test_continuous function)
-
 
 class SIYISTREAM:
 
@@ -43,22 +41,6 @@ class SIYISTREAM:
         self._logger.info("Stream link: {}".format(self._stream_link))
         self._stream = None
 
-        #Due to the queue like nature of opencv (really fricking stupid), we need to use a bufferless video capture
-        self.lock = threading.Lock()
-        self.capture_thread = threading.Thread(target=self._read_stream)
-        self.capture_thread.daemon = True
-
-    # grab frames as soon as they are available
-    def _read_stream(self):
-        while True:
-            with self.lock:
-                ret = self._stream.grab()
-                self._logger.debug("Grabbed frame")
-            if not ret:
-                break
-            # Delay so the thread lock isn't hogged
-            time.sleep(1/35) # slightly above 30fps
-
     def connect(self):
         """
         Connect to the camera
@@ -66,17 +48,9 @@ class SIYISTREAM:
         if self._stream is not None:
             self._logger.warning("Already connected to camera")
             return
-        self._stream = cv2.VideoCapture(self._stream_link)
-        # Check if camera is connected
-        if not self._stream.isOpened():
-            self._logger.error("Unable to connect to camera")
-            self._stream = None
-            return
-        # Start capture thread
-        self.capture_thread.start()
+        self._stream = av.open("rtsp://192.168.144.25:8554/main.264", format="rtsp").demux()
+  
         self._logger.info("Connected to camera")
-        # Let the buffer fill
-        time.sleep(2)
         return True
 
     def disconnect(self):
@@ -86,7 +60,6 @@ class SIYISTREAM:
         if self._stream is None:
             self._logger.warning("Already disconnected from camera")
             return
-        self._stream.release()
         self._stream = None
         self._logger.info("Disconnected from camera")
         return
@@ -101,12 +74,13 @@ class SIYISTREAM:
         ret = False
         while not ret:
             self._logger.debug("Waiting for lock")
-            with self.lock:
-                self._logger.debug("Lock acquired")
-                ret, frame = self._stream.retrieve()
-                if ret:
-                    self._logger.info("Frame read")
-                else:
-                    self._logger.warning("Unable to read frame")
+            self._logger.debug("Lock acquired")
+            frame: av.VideoFrame = next(self._stream).decode()[0]
+            frame = frame.to_ndarray(format="bgr24")
+            ret = frame is not None
+            if ret:
+                self._logger.info("Frame read")
+            else:
+                self._logger.warning("Unable to read frame")
         return frame
     
