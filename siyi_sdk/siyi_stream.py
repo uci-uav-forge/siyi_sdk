@@ -86,7 +86,7 @@ class SIYISTREAM:
 
     def get_frame(self) -> np.ndarray:
         """
-        Get a frame from the stream
+        Get the latest frame from the stream
         """
         if self._stream is None:
             raise Exception("Not connected to camera")
