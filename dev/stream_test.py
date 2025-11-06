@@ -9,7 +9,7 @@ def test():
         print("No stream connection")
         exit(1)
 
-    sleep(1)
+    sleep(3)
     while 1:
         frame = stream.get_frame()
         cv2.putText(frame, "Resolution: {}".format(frame.shape), (0, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 1)
